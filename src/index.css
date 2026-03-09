@@ -1,0 +1,215 @@
+@import "@fontsource/plus-jakarta-sans/400.css";
+@import "@fontsource/plus-jakarta-sans/500.css";
+@import "@fontsource/plus-jakarta-sans/600.css";
+@import "@fontsource/plus-jakarta-sans/700.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(199, 89%, 48%) 100%);
+    --gradient-bg: linear-gradient(135deg, hsl(220, 20%, 97%) 0%, hsl(220, 30%, 94%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(222, 47%, 11%) 0%, hsl(217, 33%, 17%) 100%);
+    --glass-bg: hsla(0, 0%, 100%, 0.8);
+    --glass-border: hsla(0, 0%, 100%, 0.3);
+    --shadow-glow: 0 0 60px hsla(217, 91%, 60%, 0.15);
+    --shadow-card: 0 4px 24px -4px hsla(222, 47%, 11%, 0.08);
+    --shadow-card-hover: 0 12px 32px -8px hsla(222, 47%, 11%, 0.12);
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 220 20% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 220 20% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 220 20% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 220 20% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 220 9% 60%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
+
+    --gradient-bg: linear-gradient(135deg, hsl(222, 47%, 6%) 0%, hsl(222, 47%, 8%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(222, 47%, 4%) 0%, hsl(222, 47%, 8%) 100%);
+    --glass-bg: hsla(222, 47%, 11%, 0.7);
+    --glass-border: hsla(220, 20%, 98%, 0.1);
+    --shadow-glow: 0 0 80px hsla(217, 91%, 60%, 0.2);
+    --shadow-card: 0 4px 24px -4px hsla(0, 0%, 0%, 0.3);
+    --shadow-card-hover: 0 12px 32px -8px hsla(0, 0%, 0%, 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    background: var(--gradient-bg);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-bg {
+    background: var(--gradient-primary);
+  }
+
+  .hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .skill-bar {
+    @apply relative h-2 rounded-full overflow-hidden;
+    background: hsl(var(--muted));
+  }
+
+  .skill-bar-fill {
+    @apply h-full rounded-full;
+    background: var(--gradient-primary);
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-link {
+    @apply relative px-3 py-2 text-sm font-medium transition-colors;
+  }
+
+  .nav-link::after {
+    content: "";
+    @apply absolute bottom-0 left-0 h-0.5 w-0 rounded-full;
+    background: var(--gradient-primary);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .tech-badge {
+    @apply px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-medium;
+    background: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+    transition: all 0.2s ease;
+  }
+
+  .tech-badge:hover {
+    background: hsl(var(--primary) / 0.2);
+    transform: scale(1.05);
+  }
+
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold mb-6;
+  }
+
+  .section-title span {
+    @apply gradient-text;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px hsla(217, 91%, 60%, 0.3);
+  }
+  to {
+    box-shadow: 0 0 40px hsla(217, 91%, 60%, 0.5);
+  }
+}
