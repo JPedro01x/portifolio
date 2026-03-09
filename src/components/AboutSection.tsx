@@ -5,35 +5,45 @@ import { User, Target, Plus, Trash2 } from "lucide-react";
 import { Section } from "./Section";
 import { EditableText } from "./EditableText";
 import { useAuth } from "./AuthProvider";
+import { StorageService, STORAGE_KEYS, aboutSchema } from "../services/storageService";
 
 interface Tag {
   id: string;
   text: string;
 }
 
+const defaultTags: Tag[] = [
+  { id: "1", text: "Frontend" },
+  { id: "2", text: "Desenvolvimento" },
+  { id: "3", text: "Tecnologia" },
+  { id: "4", text: "Inovação" },
+];
+
 export function AboutSection() {
   const { isAuthenticated } = useAuth();
   const [description, setDescription] = useState("Sou um jovem em busca da primeira oportunidade no mercado de trabalho, motivado a aprender, crescer e me desenvolver profissionalmente. Tenho formação técnica em informática e atualmente estou cursando graduação em tecnologia. Possuo facilidade com tecnologia, resolução de problemas e espírito de equipe. Busco contribuir com minha dedicação e vontade de evoluir constantemente.");
   const [objective, setObjective] = useState("Ingressar no mercado de trabalho na área de Tecnologia, onde eu possa aplicar meus conhecimentos técnicos, adquirir experiência prática e crescer profissionalmente, contribuindo para o sucesso da empresa com dedicação e responsabilidade.");
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<Tag[]>(defaultTags);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    const savedDesc = localStorage.getItem('aboutDescription');
-    const savedObj = localStorage.getItem('aboutObjective');
-    const savedTags = localStorage.getItem('aboutTags');
-    
-    if (savedDesc) setDescription(savedDesc);
-    if (savedObj) setObjective(savedObj);
-    if (savedTags) setTags(JSON.parse(savedTags));
+    const savedAbout = StorageService.get(STORAGE_KEYS.ABOUT, aboutSchema);
+    if (savedAbout) {
+      setDescription(savedAbout.description);
+      setObjective(savedAbout.objective);
+      setTags(savedAbout.tags.map((text, index) => ({ id: String(index + 1), text })));
+    }
   }, []);
 
   useEffect(() => {
     const handleAdminSave = () => {
-      localStorage.setItem('aboutDescription', description);
-      localStorage.setItem('aboutObjective', objective);
-      localStorage.setItem('aboutTags', JSON.stringify(tags));
+      const aboutData = {
+        description,
+        objective,
+        tags: tags.map(tag => tag.text),
+      };
+      StorageService.set(STORAGE_KEYS.ABOUT, aboutData);
     };
 
     window.addEventListener('admin-save', handleAdminSave);
@@ -42,17 +52,32 @@ export function AboutSection() {
 
   const saveDescription = (newText: string) => {
     setDescription(newText);
-    localStorage.setItem('aboutDescription', newText);
+    const currentAbout = StorageService.get(STORAGE_KEYS.ABOUT, aboutSchema) || {
+      description,
+      objective,
+      tags: tags.map(tag => tag.text),
+    };
+    StorageService.set(STORAGE_KEYS.ABOUT, { ...currentAbout, description: newText });
   };
 
   const saveObjective = (newText: string) => {
     setObjective(newText);
-    localStorage.setItem('aboutObjective', newText);
+    const currentAbout = StorageService.get(STORAGE_KEYS.ABOUT, aboutSchema) || {
+      description,
+      objective,
+      tags: tags.map(tag => tag.text),
+    };
+    StorageService.set(STORAGE_KEYS.ABOUT, { ...currentAbout, objective: newText });
   };
 
   const saveTags = (newTags: Tag[]) => {
     setTags(newTags);
-    localStorage.setItem('aboutTags', JSON.stringify(newTags));
+    const currentAbout = StorageService.get(STORAGE_KEYS.ABOUT, aboutSchema) || {
+      description,
+      objective,
+      tags: tags.map(tag => tag.text),
+    };
+    StorageService.set(STORAGE_KEYS.ABOUT, { ...currentAbout, tags: newTags.map(tag => tag.text) });
   };
 
   const addTag = () => {

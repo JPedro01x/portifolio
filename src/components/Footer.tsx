@@ -1,20 +1,21 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { EditableText } from './EditableText';
+import { StorageService, STORAGE_KEYS, footerSchema } from '../services/storageService';
 
 export function Footer() {
   const [footerText, setFooterText] = useState('© 2026 João Pedro de Carvalho Bernardo. Todos os direitos reservados.');
 
   useEffect(() => {
-    const saved = localStorage.getItem('footerText');
-    if (saved) {
-      setFooterText(saved);
+    const savedFooter = StorageService.get(STORAGE_KEYS.FOOTER, footerSchema);
+    if (savedFooter) {
+      setFooterText(savedFooter.text);
     }
   }, []);
 
   useEffect(() => {
     const handleAdminSave = () => {
-      localStorage.setItem('footerText', footerText);
+      StorageService.set(STORAGE_KEYS.FOOTER, { text: footerText });
     };
 
     window.addEventListener('admin-save', handleAdminSave);
@@ -23,7 +24,7 @@ export function Footer() {
 
   const handleSaveFooterText = (newText: string) => {
     setFooterText(newText);
-    localStorage.setItem('footerText', newText);
+    StorageService.set(STORAGE_KEYS.FOOTER, { text: newText });
   };
 
   return (

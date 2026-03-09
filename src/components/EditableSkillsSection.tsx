@@ -5,6 +5,7 @@ import { Zap, Users, Lightbulb, Rocket, Heart, Plus, Trash2 } from "lucide-react
 import { Section } from "./Section";
 import { EditableText } from "./EditableText";
 import { useAuth } from "./AuthProvider";
+import { StorageService, STORAGE_KEYS, skillsSchema } from "../services/storageService";
 
 interface TechnicalSkill {
   id: string;
@@ -34,8 +35,11 @@ export function EditableSkillsSection() {
 
   useEffect(() => {
     const handleAdminSave = () => {
-      localStorage.setItem('technicalSkills', JSON.stringify(technicalSkills));
-      localStorage.setItem('softSkills', JSON.stringify(softSkills));
+      const skillsData = {
+        technical: technicalSkills,
+        soft: softSkills,
+      };
+      StorageService.set(STORAGE_KEYS.SKILLS, skillsData);
     };
 
     window.addEventListener('admin-save', handleAdminSave);
@@ -43,11 +47,10 @@ export function EditableSkillsSection() {
   }, [technicalSkills, softSkills]);
 
   useEffect(() => {
-    const savedTechnical = localStorage.getItem('technicalSkills');
-    const savedSoft = localStorage.getItem('softSkills');
-    
-    if (savedTechnical) {
-      setTechnicalSkills(JSON.parse(savedTechnical));
+    const savedSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema);
+    if (savedSkills) {
+      setTechnicalSkills(savedSkills.technical as TechnicalSkill[]);
+      setSoftSkills(savedSkills.soft as SoftSkill[]);
     } else {
       // Dados iniciais
       const initialTechnicalSkills: TechnicalSkill[] = [
@@ -58,26 +61,7 @@ export function EditableSkillsSection() {
         { id: "5", name: "Pacote Office", level: 85 },
       ];
       setTechnicalSkills(initialTechnicalSkills);
-      localStorage.setItem('technicalSkills', JSON.stringify(initialTechnicalSkills));
-    }
 
-    if (savedSoft) {
-      const parsed = JSON.parse(savedSoft);
-      const migrated: SoftSkill[] = (Array.isArray(parsed) ? parsed : []).map((skill: any) => {
-        if (typeof skill?.iconKey === "string") {
-          return { id: String(skill.id), name: String(skill.name ?? ""), iconKey: skill.iconKey };
-        }
-
-        if (typeof skill?.icon === "string") {
-          return { id: String(skill.id), name: String(skill.name ?? ""), iconKey: skill.icon };
-        }
-
-        return { id: String(skill?.id ?? Date.now()), name: String(skill?.name ?? ""), iconKey: "Heart" };
-      });
-      setSoftSkills(migrated);
-      localStorage.setItem('softSkills', JSON.stringify(migrated));
-    } else {
-      // Dados iniciais
       const initialSoftSkills: SoftSkill[] = [
         { id: "1", name: "Trabalho em Equipe", iconKey: "Users" },
         { id: "2", name: "Resolução de Problemas", iconKey: "Lightbulb" },
@@ -85,18 +69,30 @@ export function EditableSkillsSection() {
         { id: "4", name: "Dedicação", iconKey: "Heart" },
       ];
       setSoftSkills(initialSoftSkills);
-      localStorage.setItem('softSkills', JSON.stringify(initialSoftSkills));
+
+      StorageService.set(STORAGE_KEYS.SKILLS, {
+        technical: initialTechnicalSkills,
+        soft: initialSoftSkills,
+      });
     }
   }, []);
 
   const saveTechnicalSkills = (newSkills: TechnicalSkill[]) => {
     setTechnicalSkills(newSkills);
-    localStorage.setItem('technicalSkills', JSON.stringify(newSkills));
+    const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema) || {
+      technical: technicalSkills,
+      soft: softSkills,
+    };
+    StorageService.set(STORAGE_KEYS.SKILLS, { ...currentSkills, technical: newSkills });
   };
 
   const saveSoftSkills = (newSkills: SoftSkill[]) => {
     setSoftSkills(newSkills);
-    localStorage.setItem('softSkills', JSON.stringify(newSkills));
+    const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema) || {
+      technical: technicalSkills,
+      soft: softSkills,
+    };
+    StorageService.set(STORAGE_KEYS.SKILLS, { ...currentSkills, soft: newSkills });
   };
 
   const addTechnicalSkill = () => {

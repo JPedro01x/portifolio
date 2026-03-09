@@ -5,15 +5,16 @@ import { Code2, Server, Wrench, Network, Plus, Trash2 } from "lucide-react";
 import { Section } from "./Section";
 import { EditableText } from "./EditableText";
 import { useAuth } from "./AuthProvider";
+import { StorageService, STORAGE_KEYS, techStackSchema } from "../services/storageService";
 
 interface TechItem {
   id: string;
-  text: string;
+  name: string;
 }
 
 interface Category {
   id: string;
-  title: string;
+  name: string;
   iconKey: string;
   items: TechItem[];
 }
@@ -33,7 +34,7 @@ export function EditableTechStackSection() {
 
   useEffect(() => {
     const handleAdminSave = () => {
-      localStorage.setItem('techCategories', JSON.stringify(categories));
+      StorageService.set(STORAGE_KEYS.TECH_STACK, { categories });
     };
 
     window.addEventListener('admin-save', handleAdminSave);
@@ -41,91 +42,75 @@ export function EditableTechStackSection() {
   }, [categories]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('techCategories');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const migrated: Category[] = (Array.isArray(parsed) ? parsed : []).map((cat: any) => {
-        const items = Array.isArray(cat?.items) ? cat.items : [];
-        const iconKey = typeof cat?.iconKey === "string"
-          ? cat.iconKey
-          : (typeof cat?.icon === "string" ? cat.icon : "Code2");
-
-        return {
-          id: String(cat?.id ?? Date.now()),
-          title: String(cat?.title ?? ""),
-          iconKey,
-          items: items.map((it: any) => ({ id: String(it?.id ?? `${Date.now()}`), text: String(it?.text ?? "") })),
-        };
-      });
-
-      setCategories(migrated);
-      localStorage.setItem('techCategories', JSON.stringify(migrated));
+    const savedTechStack = StorageService.get(STORAGE_KEYS.TECH_STACK, techStackSchema);
+    if (savedTechStack) {
+      setCategories(savedTechStack.categories as Category[]);
     } else {
       // Dados iniciais
       const initialCategories: Category[] = [
         {
           id: "1",
-          title: "Desenvolvimento Web",
+          name: "Desenvolvimento Web",
           iconKey: "Code2",
           items: [
-            { id: "1-1", text: "JavaScript" },
-            { id: "1-2", text: "TypeScript" },
-            { id: "1-3", text: "React.js" },
-            { id: "1-4", text: "Next.js" },
-            { id: "1-5", text: "Vite" },
-            { id: "1-6", text: "Tailwind CSS" },
+            { id: "1-1", name: "JavaScript" },
+            { id: "1-2", name: "TypeScript" },
+            { id: "1-3", name: "React.js" },
+            { id: "1-4", name: "Next.js" },
+            { id: "1-5", name: "Vite" },
+            { id: "1-6", name: "Tailwind CSS" },
           ],
         },
         {
           id: "2",
-          title: "Desenvolvimento Backend",
+          name: "Desenvolvimento Backend",
           iconKey: "Server",
           items: [
-            { id: "2-1", text: "Java" },
-            { id: "2-2", text: "Python" },
-            { id: "2-3", text: "Node.js" },
-            { id: "2-4", text: "Spring Boot" },
-            { id: "2-5", text: "SQL" },
+            { id: "2-1", name: "Java" },
+            { id: "2-2", name: "Python" },
+            { id: "2-3", name: "Node.js" },
+            { id: "2-4", name: "Spring Boot" },
+            { id: "2-5", name: "SQL" },
           ],
         },
         {
           id: "3",
-          title: "Ferramentas",
+          name: "Ferramentas",
           iconKey: "Wrench",
           items: [
-            { id: "3-1", text: "Git" },
-            { id: "3-2", text: "GitHub" },
-            { id: "3-3", text: "Pacote Office" },
-            { id: "3-4", text: "Canva" },
-            { id: "3-5", text: "Google Drive" },
-            { id: "3-6", text: "Kanban" },
-            { id: "3-7", text: "Inteligência Artificial" },
+            { id: "3-1", name: "Git" },
+            { id: "3-2", name: "GitHub" },
+            { id: "3-3", name: "Pacote Office" },
+            { id: "3-4", name: "Canva" },
+            { id: "3-5", name: "Google Drive" },
+            { id: "3-6", name: "Kanban" },
+            { id: "3-7", name: "Inteligência Artificial" },
           ],
         },
         {
           id: "4",
-          title: "Redes e Sistemas",
+          name: "Redes e Sistemas",
           iconKey: "Network",
           items: [
-            { id: "4-1", text: "Hardware" },
-            { id: "4-2", text: "Manutenção de Computadores" },
+            { id: "4-1", name: "Hardware" },
+            { id: "4-2", name: "Manutenção de Computadores" },
           ],
         },
       ];
       setCategories(initialCategories);
-      localStorage.setItem('techCategories', JSON.stringify(initialCategories));
+      StorageService.set(STORAGE_KEYS.TECH_STACK, { categories: initialCategories });
     }
   }, []);
 
   const saveCategories = (newCategories: Category[]) => {
     setCategories(newCategories);
-    localStorage.setItem('techCategories', JSON.stringify(newCategories));
+    StorageService.set(STORAGE_KEYS.TECH_STACK, { categories: newCategories });
   };
 
   const addCategory = () => {
     const newCategory: Category = {
       id: Date.now().toString(),
-      title: "Nova Categoria",
+      name: "Nova Categoria",
       iconKey: "Code2",
       items: []
     };
@@ -148,7 +133,7 @@ export function EditableTechStackSection() {
       if (cat.id === categoryId) {
         const newItem: TechItem = {
           id: `${categoryId}-${Date.now()}`,
-          text: "Nova Tecnologia"
+          name: "Nova Tecnologia"
         };
         return { ...cat, items: [...cat.items, newItem] };
       }
@@ -163,7 +148,7 @@ export function EditableTechStackSection() {
         return {
           ...cat,
           items: cat.items.map(item => 
-            item.id === itemId ? { ...item, text: newText } : item
+            item.id === itemId ? { ...item, name: newText } : item
           )
         };
       }
@@ -231,8 +216,8 @@ export function EditableTechStackSection() {
                 </div>
                 <h3 className="font-semibold">
                   <EditableText
-                    text={category.title}
-                    onSave={(newText) => updateCategory(category.id, 'title', newText)}
+                    text={category.name}
+                    onSave={(newText) => updateCategory(category.id, 'name', newText)}
                   />
                 </h3>
               </div>
@@ -249,7 +234,7 @@ export function EditableTechStackSection() {
                     {isAuthenticated ? (
                       <div className="flex items-center gap-1">
                         <EditableText
-                          text={item.text}
+                          text={item.name}
                           onSave={(newText) => updateItem(category.id, item.id, newText)}
                           className="tech-badge"
                         />
@@ -261,7 +246,7 @@ export function EditableTechStackSection() {
                         </button>
                       </div>
                     ) : (
-                      <span className="tech-badge">{item.text}</span>
+                      <span className="tech-badge">{item.name}</span>
                     )}
                   </motion.span>
                 ))}

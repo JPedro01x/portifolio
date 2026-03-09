@@ -5,6 +5,7 @@ import { GraduationCap, Calendar, MapPin, CheckCircle, Clock, Plus, Trash2 } fro
 import { Section } from "./Section";
 import { EditableText } from "./EditableText";
 import { useAuth } from "./AuthProvider";
+import { StorageService, STORAGE_KEYS, educationSchema } from "../services/storageService";
 
 interface Education {
   title: string;
@@ -21,9 +22,9 @@ export function EducationSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    const saved = localStorage.getItem('education');
-    if (saved) {
-      setEducation(JSON.parse(saved));
+    const savedEducation = StorageService.get(STORAGE_KEYS.EDUCATION, educationSchema);
+    if (savedEducation) {
+      setEducation(savedEducation.items as Education[]);
     } else {
       // Dados iniciais
       const initialData: Education[] = [
@@ -43,12 +44,13 @@ export function EducationSection() {
         },
       ];
       setEducation(initialData);
+      StorageService.set(STORAGE_KEYS.EDUCATION, { items: initialData });
     }
   }, []);
 
   const saveEducation = (newEducation: Education[]) => {
     setEducation(newEducation);
-    localStorage.setItem('education', JSON.stringify(newEducation));
+    StorageService.set(STORAGE_KEYS.EDUCATION, { items: newEducation });
   };
 
   const updateEducationItem = (index: number, field: keyof Education, value: any) => {

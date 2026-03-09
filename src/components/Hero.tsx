@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Phone, Mail, MapPin, Github, Calendar, Camera, Edit2, Upload, Image } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { EditableText } from "./EditableText";
+import { StorageService, STORAGE_KEYS, heroSchema } from "../services/storageService";
 
 const defaultContactInfo = [
   { icon: "Phone", text: "(87) 99137-3783", href: "tel:+5587991373783" },
@@ -32,26 +33,27 @@ export function Hero() {
   // Editable states
   const [name, setName] = useState("João Pedro de Carvalho Bernardo");
   const [subtitle, setSubtitle] = useState("Jovem Aprendiz | Junior | Estágio");
-  const [contactInfo, setContactInfo] = useState(defaultContactInfo);
+  const [contactInfo, setContactInfo] = useState(defaultContactInfo as typeof defaultContactInfo);
 
   useEffect(() => {
-    const savedPhoto = localStorage.getItem('profilePhoto');
-    const savedName = localStorage.getItem('heroName');
-    const savedSubtitle = localStorage.getItem('heroSubtitle');
-    const savedContactInfo = localStorage.getItem('heroContactInfo');
-    
-    if (savedPhoto) setProfilePhoto(savedPhoto);
-    if (savedName) setName(savedName);
-    if (savedSubtitle) setSubtitle(savedSubtitle);
-    if (savedContactInfo) setContactInfo(JSON.parse(savedContactInfo));
+    const savedHero = StorageService.get(STORAGE_KEYS.HERO, heroSchema);
+    if (savedHero) {
+      setProfilePhoto(savedHero.profilePhoto || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face");
+      setName(savedHero.name);
+      setSubtitle(savedHero.subtitle);
+      setContactInfo(savedHero.contactInfo as typeof defaultContactInfo);
+    }
   }, []);
 
   useEffect(() => {
     const handleAdminSave = () => {
-      localStorage.setItem('profilePhoto', profilePhoto);
-      localStorage.setItem('heroName', name);
-      localStorage.setItem('heroSubtitle', subtitle);
-      localStorage.setItem('heroContactInfo', JSON.stringify(contactInfo));
+      const heroData = {
+        profilePhoto,
+        name,
+        subtitle,
+        contactInfo,
+      };
+      StorageService.set(STORAGE_KEYS.HERO, heroData);
     };
 
     window.addEventListener('admin-save', handleAdminSave);
@@ -60,17 +62,35 @@ export function Hero() {
 
   const saveName = (newName: string) => {
     setName(newName);
-    localStorage.setItem('heroName', newName);
+    const currentHero = StorageService.get(STORAGE_KEYS.HERO, heroSchema) || {
+      profilePhoto,
+      name,
+      subtitle,
+      contactInfo,
+    };
+    StorageService.set(STORAGE_KEYS.HERO, { ...currentHero, name: newName });
   };
 
   const saveSubtitle = (newSubtitle: string) => {
     setSubtitle(newSubtitle);
-    localStorage.setItem('heroSubtitle', newSubtitle);
+    const currentHero = StorageService.get(STORAGE_KEYS.HERO, heroSchema) || {
+      profilePhoto,
+      name,
+      subtitle,
+      contactInfo,
+    };
+    StorageService.set(STORAGE_KEYS.HERO, { ...currentHero, subtitle: newSubtitle });
   };
 
   const saveContactInfo = (newContactInfo: typeof defaultContactInfo) => {
     setContactInfo(newContactInfo);
-    localStorage.setItem('heroContactInfo', JSON.stringify(newContactInfo));
+    const currentHero = StorageService.get(STORAGE_KEYS.HERO, heroSchema) || {
+      profilePhoto,
+      name,
+      subtitle,
+      contactInfo,
+    };
+    StorageService.set(STORAGE_KEYS.HERO, { ...currentHero, contactInfo: newContactInfo });
   };
 
   const updateContactItem = (index: number, newText: string) => {
@@ -83,7 +103,13 @@ export function Hero() {
     const finalImage = uploadedImage || tempPhotoUrl.trim();
     if (finalImage) {
       setProfilePhoto(finalImage);
-      localStorage.setItem('profilePhoto', finalImage);
+      const currentHero = StorageService.get(STORAGE_KEYS.HERO, heroSchema) || {
+        profilePhoto,
+        name,
+        subtitle,
+        contactInfo,
+      };
+      StorageService.set(STORAGE_KEYS.HERO, { ...currentHero, profilePhoto: finalImage });
       setIsEditingPhoto(false);
       setTempPhotoUrl("");
       setUploadedImage(null);

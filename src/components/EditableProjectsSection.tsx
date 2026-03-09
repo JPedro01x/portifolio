@@ -5,6 +5,7 @@ import { Code2, ExternalLink, Github, CheckCircle, Clock, Plus, Trash2, Camera, 
 import { Section } from "./Section";
 import { EditableText } from "./EditableText";
 import { useAuth } from "./AuthProvider";
+import { StorageService, STORAGE_KEYS, projectsSchema } from "../services/storageService";
 
 interface Project {
   id: string;
@@ -12,8 +13,8 @@ interface Project {
   description: string;
   technologies: string[];
   image: string;
-  githubUrl: string;
-  liveUrl: string;
+  codeUrl: string;
+  demoUrl: string;
   featured: boolean;
   status: "concluido" | "em_andamento";
 }
@@ -29,9 +30,9 @@ export function EditableProjectsSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   useEffect(() => {
-    const saved = localStorage.getItem('projects');
-    if (saved) {
-      setProjects(JSON.parse(saved));
+    const savedProjects = StorageService.get(STORAGE_KEYS.PROJECTS, projectsSchema);
+    if (savedProjects) {
+      setProjects(savedProjects.projects as Project[]);
     } else {
       // Dados iniciais
       const initialProjects: Project[] = [
@@ -41,8 +42,8 @@ export function EditableProjectsSection() {
           description: "Portfólio pessoal desenvolvido com React, TypeScript e Tailwind CSS, apresentando informações profissionais de forma moderna e interativa.",
           technologies: ["React", "TypeScript", "Tailwind CSS", "Framer Motion"],
           image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop",
-          githubUrl: "https://github.com",
-          liveUrl: "https://github.com",
+          codeUrl: "https://github.com",
+          demoUrl: "https://github.com",
           featured: true,
           status: "concluido",
         },
@@ -52,8 +53,8 @@ export function EditableProjectsSection() {
           description: "Aplicação web para gerenciamento de dados com interface responsiva e funcionalidades completas de CRUD.",
           technologies: ["React", "Node.js", "SQL", "Spring Boot"],
           image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-          githubUrl: "https://github.com",
-          liveUrl: "#",
+          codeUrl: "https://github.com",
+          demoUrl: "#",
           featured: false,
           status: "em_andamento",
         },
@@ -63,20 +64,20 @@ export function EditableProjectsSection() {
           description: "API desenvolvida para integração de sistemas com autenticação e documentação completa.",
           technologies: ["Java", "Spring Boot", "MySQL", "JWT"],
           image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop",
-          githubUrl: "https://github.com",
-          liveUrl: "#",
+          codeUrl: "https://github.com",
+          demoUrl: "#",
           featured: false,
           status: "concluido",
         },
       ];
       setProjects(initialProjects);
-      localStorage.setItem('projects', JSON.stringify(initialProjects));
+      StorageService.set(STORAGE_KEYS.PROJECTS, { projects: initialProjects });
     }
   }, []);
 
   useEffect(() => {
     const handleAdminSave = () => {
-      localStorage.setItem('projects', JSON.stringify(projects));
+      StorageService.set(STORAGE_KEYS.PROJECTS, { projects });
     };
 
     window.addEventListener('admin-save', handleAdminSave);
@@ -85,7 +86,7 @@ export function EditableProjectsSection() {
 
   const saveProjects = (newProjects: Project[]) => {
     setProjects(newProjects);
-    localStorage.setItem('projects', JSON.stringify(newProjects));
+    StorageService.set(STORAGE_KEYS.PROJECTS, { projects: newProjects });
   };
 
   const addProject = () => {
@@ -95,8 +96,8 @@ export function EditableProjectsSection() {
       description: "Descrição do novo projeto.",
       technologies: ["Tecnologia 1"],
       image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop",
-      githubUrl: "https://github.com",
-      liveUrl: "#",
+      codeUrl: "https://github.com",
+      demoUrl: "#",
       featured: false,
       status: "em_andamento",
     };
@@ -419,16 +420,16 @@ export function EditableProjectsSection() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Github className="h-4 w-4" />
                         <EditableText
-                          text={project.githubUrl}
-                          onSave={(newText) => updateProject(project.id, 'githubUrl', newText)}
+                          text={project.codeUrl}
+                          onSave={(newText) => updateProject(project.id, 'codeUrl', newText)}
                           className="text-xs"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <ExternalLink className="h-4 w-4" />
                         <EditableText
-                          text={project.liveUrl}
-                          onSave={(newText) => updateProject(project.id, 'liveUrl', newText)}
+                          text={project.demoUrl}
+                          onSave={(newText) => updateProject(project.id, 'demoUrl', newText)}
                           className="text-xs"
                         />
                       </div>
@@ -436,7 +437,7 @@ export function EditableProjectsSection() {
                   ) : (
                     <>
                       <a
-                        href={project.githubUrl}
+                        href={project.codeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-lg bg-primary/10 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary transition-all hover:bg-primary/20 hover:scale-105"
@@ -444,9 +445,9 @@ export function EditableProjectsSection() {
                         <Github className="h-4 w-4" />
                         Código
                       </a>
-                      {project.liveUrl !== "#" && (
+                      {project.demoUrl !== "#" && (
                         <a
-                          href={project.liveUrl}
+                          href={project.demoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 rounded-lg bg-accent/10 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-accent transition-all hover:bg-accent/20 hover:scale-105"
