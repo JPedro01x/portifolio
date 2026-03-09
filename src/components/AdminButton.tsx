@@ -3,16 +3,24 @@ import { motion } from 'framer-motion';
 import { User, LogOut, Edit3, Shield, Save, Check } from 'lucide-react';
 import { useAuth } from './AuthProvider';
 import { LoginModal } from './LoginModal';
+import { publishCurrentToRemote } from '../services/remoteContentService';
 
 export function AdminButton() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { user, logout, isAuthenticated } = useAuth();
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setSaveError(null);
     window.dispatchEvent(new Event('admin-save'));
-    setShowSaved(true);
-    window.setTimeout(() => setShowSaved(false), 2000);
+    try {
+      await publishCurrentToRemote();
+      setShowSaved(true);
+      window.setTimeout(() => setShowSaved(false), 2000);
+    } catch {
+      setSaveError('Falha ao publicar. Faça login novamente e tente de novo.');
+    }
   };
 
   if (isAuthenticated) {
@@ -32,6 +40,16 @@ export function AdminButton() {
             >
               <Check className="h-4 w-4" />
               Salvo!
+            </motion.div>
+          )}
+          {saveError && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="absolute -top-10 left-0 flex items-center rounded-xl bg-red-500/20 px-3 py-2 text-xs font-medium text-red-600 backdrop-blur-sm"
+            >
+              {saveError}
             </motion.div>
           )}
           <div className="flex items-center gap-3 bg-gradient-to-r from-primary/20 to-accent/20 backdrop-blur-lg border border-white/20 rounded-2xl px-4 py-3 shadow-2xl shadow-primary/10">

@@ -15,11 +15,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [error, setError] = useState('');
   const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (login(username, password)) {
+    if (await login(username, password)) {
       onClose();
       setUsername('');
       setPassword('');

@@ -7,8 +7,8 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -18,24 +18,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    // Mantém apenas um estado local para UI; a autorização real do "Salvar global"
+    // é protegida no servidor via cookie httpOnly.
     const savedUser = localStorage.getItem('authUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    // Credenciais simples - em produção use hash e backend
-    if (username === 'admin' && password === 'joao123') {
+  const login = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!res.ok) return false;
+
       const newUser = { username, isAuthenticated: true };
       setUser(newUser);
       localStorage.setItem('authUser', JSON.stringify(newUser));
       return true;
+    } catch {
+      return false;
     }
-    return false;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/logout', { method: 'POST' });
+    } catch {
+    }
     setUser(null);
     localStorage.removeItem('authUser');
   };

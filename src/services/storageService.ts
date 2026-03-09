@@ -24,7 +24,7 @@ const educationItemSchema = z.object({
   title: z.string(),
   institution: z.string(),
   period: z.string(),
-  status: z.enum(["concluido", "cursando"]),
+  status: z.enum(["concluido", "em_andamento", "cursando"]),
 });
 
 const educationSchema = z.object({
