@@ -47,9 +47,10 @@ async function kvSet(url: string, token: string, key: string, value: any) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      // Upstash REST aceita o valor como string no body.
+      "Content-Type": "text/plain; charset=utf-8",
     },
-    body: JSON.stringify(value),
+    body: value,
   });
   if (!res.ok) {
     throw new Error(`kv_set_failed_${res.status}`);
@@ -65,6 +66,15 @@ export default async function handler(req: IncomingMessage & { method?: string }
   if (req.method === "GET") {
     try {
       const result = await kvGet(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, KV_KEY);
+      if (typeof result === "string") {
+        try {
+          json(res, 200, { ok: true, data: JSON.parse(result) });
+          return;
+        } catch {
+          json(res, 200, { ok: true, data: result });
+          return;
+        }
+      }
       json(res, 200, { ok: true, data: result });
     } catch (e: any) {
       json(res, 200, { ok: true, data: null });
@@ -86,7 +96,8 @@ export default async function handler(req: IncomingMessage & { method?: string }
     }
 
     try {
-      await kvSet(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, KV_KEY, body);
+      // Salva sempre como JSON string para garantir compatibilidade no KV.
+      await kvSet(UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN, KV_KEY, JSON.stringify(body));
       json(res, 200, { ok: true });
     } catch (e: any) {
       json(res, 500, { error: "save_failed" });

@@ -20,7 +20,9 @@ function buildSnapshotFromLocalStorage(): Snapshot {
 function applySnapshotToLocalStorage(snapshot: Snapshot) {
   if (!snapshot || typeof snapshot !== "object") return;
 
+  const allowedKeys = new Set(Object.values(STORAGE_KEYS) as string[]);
   Object.entries(snapshot).forEach(([key, value]) => {
+    if (!allowedKeys.has(key)) return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
@@ -34,7 +36,15 @@ async function loadRemoteSnapshot() {
   if (!res.ok) return null;
   const data = await res.json();
   if (!data?.ok) return null;
-  return data.data ?? null;
+  const payload = data.data ?? null;
+  if (typeof payload === "string") {
+    try {
+      return JSON.parse(payload);
+    } catch {
+      return null;
+    }
+  }
+  return payload;
 }
 
 async function publishRemoteSnapshot(snapshot: Snapshot) {
