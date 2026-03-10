@@ -79,20 +79,20 @@ export function EditableSkillsSection() {
 
   const saveTechnicalSkills = (newSkills: TechnicalSkill[]) => {
     setTechnicalSkills(newSkills);
-    const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema) || {
-      technical: technicalSkills,
-      soft: softSkills,
-    };
-    StorageService.set(STORAGE_KEYS.SKILLS, { ...currentSkills, technical: newSkills });
+    const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema);
+    StorageService.set(STORAGE_KEYS.SKILLS, { 
+      technical: newSkills, 
+      soft: currentSkills?.soft || softSkills 
+    });
   };
 
   const saveSoftSkills = (newSkills: SoftSkill[]) => {
     setSoftSkills(newSkills);
-    const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema) || {
-      technical: technicalSkills,
-      soft: softSkills,
-    };
-    StorageService.set(STORAGE_KEYS.SKILLS, { ...currentSkills, soft: newSkills });
+    const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema);
+    StorageService.set(STORAGE_KEYS.SKILLS, { 
+      technical: currentSkills?.technical || technicalSkills, 
+      soft: newSkills 
+    });
   };
 
   const addTechnicalSkill = () => {
