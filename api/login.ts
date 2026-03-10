@@ -1,12 +1,22 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import crypto from "crypto";
-import { getEnv, json, readJsonBody, setCookie } from "./_utils";
+import { getEnv, json, readJsonBody, setCookie } from "./_utils.js";
 
 function sign(payload: string, secret: string) {
   return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 export default async function handler(req: IncomingMessage & { method?: string }, res: ServerResponse) {
+  // Debug: verificar env vars
+  console.log("DEBUG - ENV VARS:", {
+    NODE_ENV: process.env.NODE_ENV,
+    ADMIN_USERNAME: process.env.ADMIN_USERNAME ? "SET" : "MISSING",
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD ? "SET" : "MISSING", 
+    AUTH_SECRET: process.env.AUTH_SECRET ? "SET" : "MISSING",
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL ? "SET" : "MISSING",
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN ? "SET" : "MISSING"
+  });
+
   if (req.method !== "POST") {
     json(res, 405, { error: "method_not_allowed" });
     return;
@@ -21,7 +31,15 @@ export default async function handler(req: IncomingMessage & { method?: string }
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (!isProd ? "joao123" : "");
   const AUTH_SECRET = process.env.AUTH_SECRET || (!isProd ? "dev_auth_secret_change_me" : "");
 
+  console.log("DEBUG - VALUES:", {
+    isProd,
+    ADMIN_USERNAME,
+    ADMIN_PASSWORD: ADMIN_PASSWORD ? "***" : "EMPTY",
+    AUTH_SECRET: AUTH_SECRET ? "***" : "EMPTY"
+  });
+
   if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !AUTH_SECRET) {
+    console.log("DEBUG - MISSING ENV VARS!");
     json(res, 500, { error: "missing_env" });
     return;
   }

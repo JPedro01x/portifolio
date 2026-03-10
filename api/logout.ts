@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { json, setCookie } from "./_utils";
+import { json, setCookie } from "./_utils.js";
 
 export default async function handler(req: IncomingMessage & { method?: string }, res: ServerResponse) {
   if (req.method !== "POST") {

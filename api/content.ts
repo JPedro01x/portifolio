@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import crypto from "crypto";
-import { json, parseCookies, readJsonBody } from "./_utils";
+import { json, parseCookies, readJsonBody } from "./_utils.js";
 
 const KV_KEY = "portfolio_content_v1";
 
