@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import crypto from "crypto";
-import { getEnv, json, parseCookies, readJsonBody } from "./_utils";
+import { json, parseCookies, readJsonBody } from "./_utils";
 
 const KV_KEY = "portfolio_content_v1";
 
@@ -60,8 +60,13 @@ async function kvSet(url: string, token: string, key: string, value: any) {
 }
 
 export default async function handler(req: IncomingMessage & { method?: string }, res: ServerResponse) {
-  const UPSTASH_REDIS_REST_URL = getEnv("UPSTASH_REDIS_REST_URL");
-  const UPSTASH_REDIS_REST_TOKEN = getEnv("UPSTASH_REDIS_REST_TOKEN");
+  const UPSTASH_REDIS_REST_URL = process.env.UPSTASH_REDIS_REST_URL;
+  const UPSTASH_REDIS_REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!UPSTASH_REDIS_REST_URL || !UPSTASH_REDIS_REST_TOKEN) {
+    json(res, 500, { error: "missing_kv_env" });
+    return;
+  }
 
   if (req.method === "GET") {
     try {
@@ -83,7 +88,12 @@ export default async function handler(req: IncomingMessage & { method?: string }
   }
 
   if (req.method === "POST") {
-    const AUTH_SECRET = getEnv("AUTH_SECRET");
+    const isProd = process.env.NODE_ENV === "production";
+    const AUTH_SECRET = process.env.AUTH_SECRET || (!isProd ? "dev_auth_secret_change_me" : "");
+    if (!AUTH_SECRET) {
+      json(res, 500, { error: "missing_env" });
+      return;
+    }
     if (!isValidSession(req, AUTH_SECRET)) {
       json(res, 401, { error: "unauthorized" });
       return;

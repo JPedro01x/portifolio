@@ -10,6 +10,7 @@ const contactItemSchema = z.object({
 const heroSchema = z.object({
   profilePhoto: z.string().url().optional(),
   name: z.string(),
+  course: z.string().optional(),
   subtitle: z.string(),
   contactInfo: z.array(contactItemSchema),
 });

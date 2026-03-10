@@ -16,9 +16,15 @@ export default async function handler(req: IncomingMessage & { method?: string }
   const username = String(body?.username ?? "");
   const password = String(body?.password ?? "");
 
-  const ADMIN_USERNAME = getEnv("ADMIN_USERNAME");
-  const ADMIN_PASSWORD = getEnv("ADMIN_PASSWORD");
-  const AUTH_SECRET = getEnv("AUTH_SECRET");
+  const isProd = process.env.NODE_ENV === "production";
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME || (!isProd ? "admin" : "");
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (!isProd ? "joao123" : "");
+  const AUTH_SECRET = process.env.AUTH_SECRET || (!isProd ? "dev_auth_secret_change_me" : "");
+
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD || !AUTH_SECRET) {
+    json(res, 500, { error: "missing_env" });
+    return;
+  }
 
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     json(res, 401, { error: "invalid_credentials" });

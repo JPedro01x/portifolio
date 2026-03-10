@@ -9,7 +9,7 @@ import { StorageService, STORAGE_KEYS, heroSchema } from "../services/storageSer
 const defaultContactInfo = [
   { icon: "Phone", text: "(87) 99137-3783", href: "tel:+5587991373783" },
   { icon: "Mail", text: "joaopedrob882@gmail.com", href: "mailto:joaopedrob882@gmail.com" },
-  { icon: "Calendar", text: "09/06/2006 (19 anos)" },
+  { icon: "Calendar", text: "09/06/2006" },
   { icon: "MapPin", text: "Sertânia, PE - Brasil" },
   { icon: "Github", text: "GitHub", href: "https://github.com/dashboard" },
 ];
@@ -24,7 +24,7 @@ const iconMap: { [key: string]: any } = {
 
 export function Hero() {
   const { isAuthenticated } = useAuth();
-  const [profilePhoto, setProfilePhoto] = useState("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face");
+  const [profilePhoto, setProfilePhoto] = useState("/profile.jpg");
   const [isEditingPhoto, setIsEditingPhoto] = useState(false);
   const [tempPhotoUrl, setTempPhotoUrl] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -32,14 +32,16 @@ export function Hero() {
   
   // Editable states
   const [name, setName] = useState("João Pedro de Carvalho Bernardo");
+  const [course, setCourse] = useState("Análise e Desenvolvimento de Sistemas");
   const [subtitle, setSubtitle] = useState("Jovem Aprendiz | Junior | Estágio");
   const [contactInfo, setContactInfo] = useState(defaultContactInfo as typeof defaultContactInfo);
 
   useEffect(() => {
     const savedHero = StorageService.get(STORAGE_KEYS.HERO, heroSchema);
     if (savedHero) {
-      setProfilePhoto(savedHero.profilePhoto || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face");
+      setProfilePhoto(savedHero.profilePhoto || "/profile.jpg");
       setName(savedHero.name);
+      setCourse(savedHero.course || "Análise e Desenvolvimento de Sistemas");
       setSubtitle(savedHero.subtitle);
       setContactInfo(savedHero.contactInfo as typeof defaultContactInfo);
     }
@@ -50,6 +52,7 @@ export function Hero() {
       const heroData = {
         profilePhoto,
         name,
+        course,
         subtitle,
         contactInfo,
       };
@@ -58,7 +61,7 @@ export function Hero() {
 
     window.addEventListener('admin-save', handleAdminSave);
     return () => window.removeEventListener('admin-save', handleAdminSave);
-  }, [profilePhoto, name, subtitle, contactInfo]);
+  }, [profilePhoto, name, course, subtitle, contactInfo]);
 
   const saveName = (newName: string) => {
     setName(newName);
@@ -319,6 +322,15 @@ export function Hero() {
             onSave={saveName}
           />
         </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.6 }}
+          className="mt-2 text-center text-sm sm:text-base md:text-lg text-white/90 px-4 font-medium"
+        >
+          {course}
+        </motion.p>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}

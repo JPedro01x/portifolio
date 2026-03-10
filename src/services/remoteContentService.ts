@@ -2,6 +2,10 @@ import { STORAGE_KEYS } from "./storageService";
 
 type Snapshot = Record<string, any>;
 
+function isDev() {
+  return typeof import.meta !== "undefined" && !!import.meta.env?.DEV;
+}
+
 function buildSnapshotFromLocalStorage(): Snapshot {
   const snapshot: Snapshot = {};
   Object.values(STORAGE_KEYS).forEach((key) => {
@@ -33,7 +37,10 @@ function applySnapshotToLocalStorage(snapshot: Snapshot) {
 
 async function loadRemoteSnapshot() {
   const res = await fetch("/api/content", { method: "GET" });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    if (isDev() && res.status === 404) return null;
+    return null;
+  }
   const data = await res.json();
   if (!data?.ok) return null;
   const payload = data.data ?? null;
@@ -48,18 +55,24 @@ async function loadRemoteSnapshot() {
 }
 
 async function publishRemoteSnapshot(snapshot: Snapshot) {
-  const res = await fetch("/api/content", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(snapshot),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `publish_failed_${res.status}`);
-  }
-  const data = await res.json();
-  if (!data?.ok) {
-    throw new Error(data?.error || "publish_failed");
+  try {
+    const res = await fetch("/api/content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(snapshot),
+    });
+    if (!res.ok) {
+      if (isDev() && res.status === 404) return;
+      const text = await res.text();
+      throw new Error(text || `publish_failed_${res.status}`);
+    }
+    const data = await res.json();
+    if (!data?.ok) {
+      throw new Error(data?.error || "publish_failed");
+    }
+  } catch (err) {
+    if (isDev()) return;
+    throw err;
   }
 }
 

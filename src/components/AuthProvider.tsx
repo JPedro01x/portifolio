@@ -32,13 +32,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ username, password }),
       });
 
-      if (!res.ok) return false;
+      if (!res.ok) {
+        const isDev = import.meta.env.DEV;
+        if (isDev && res.status === 404) {
+          if (username === 'admin' && password === 'joao123') {
+            const newUser = { username, isAuthenticated: true };
+            setUser(newUser);
+            localStorage.setItem('authUser', JSON.stringify(newUser));
+            return true;
+          }
+        }
+        return false;
+      }
 
       const newUser = { username, isAuthenticated: true };
       setUser(newUser);
       localStorage.setItem('authUser', JSON.stringify(newUser));
       return true;
     } catch {
+      const isDev = import.meta.env.DEV;
+      if (isDev && username === 'admin' && password === 'joao123') {
+        const newUser = { username, isAuthenticated: true };
+        setUser(newUser);
+        localStorage.setItem('authUser', JSON.stringify(newUser));
+        return true;
+      }
       return false;
     }
   };
