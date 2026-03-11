@@ -54,19 +54,19 @@ export function EditableSkillsSection() {
     } else {
       // Dados iniciais
       const initialTechnicalSkills: TechnicalSkill[] = [
-        { id: "1", name: "Frontend", level: 65 },
-        { id: "2", name: "Backend", level: 60 },
-        { id: "3", name: "Banco de Dados", level: 55 },
-        { id: "4", name: "Redes de Computadores", level: 75 },
-        { id: "5", name: "Pacote Office", level: 85 },
+        { id: "tech-1", name: "Frontend", level: 65 },
+        { id: "tech-2", name: "Backend", level: 60 },
+        { id: "tech-3", name: "Banco de Dados", level: 55 },
+        { id: "tech-4", name: "Redes de Computadores", level: 75 },
+        { id: "tech-5", name: "Pacote Office", level: 85 },
       ];
       setTechnicalSkills(initialTechnicalSkills);
 
       const initialSoftSkills: SoftSkill[] = [
-        { id: "1", name: "Trabalho em Equipe", iconKey: "Users" },
-        { id: "2", name: "Resolução de Problemas", iconKey: "Lightbulb" },
-        { id: "3", name: "Proatividade", iconKey: "Rocket" },
-        { id: "4", name: "Dedicação", iconKey: "Heart" },
+        { id: "soft-1", name: "Trabalho em Equipe", iconKey: "Users" },
+        { id: "soft-2", name: "Resolução de Problemas", iconKey: "Lightbulb" },
+        { id: "soft-3", name: "Proatividade", iconKey: "Rocket" },
+        { id: "soft-4", name: "Dedicação", iconKey: "Heart" },
       ];
       setSoftSkills(initialSoftSkills);
 
@@ -78,19 +78,33 @@ export function EditableSkillsSection() {
   }, []);
 
   const saveTechnicalSkills = (newSkills: TechnicalSkill[]) => {
+    console.log("DEBUG - saveTechnicalSkills called with:", 
+      newSkills.map(s => ({ id: s.id, name: s.name, level: s.level }))
+    );
+    
     setTechnicalSkills(newSkills);
     const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema);
-    StorageService.set(STORAGE_KEYS.SKILLS, { 
+    
+    console.log("DEBUG - currentSkills from storage:", currentSkills);
+    
+    const finalData = { 
       technical: newSkills, 
       soft: currentSkills?.soft || softSkills 
+    };
+    
+    console.log("DEBUG - final data to save:", {
+      technical: finalData.technical.map(s => ({ id: s.id, name: s.name, level: s.level })),
+      soft: finalData.soft.map(s => ({ id: s.id, name: s.name }))
     });
+    
+    StorageService.set(STORAGE_KEYS.SKILLS, finalData);
   };
 
   const saveSoftSkills = (newSkills: SoftSkill[]) => {
     setSoftSkills(newSkills);
     const currentSkills = StorageService.get(STORAGE_KEYS.SKILLS, skillsSchema);
     StorageService.set(STORAGE_KEYS.SKILLS, { 
-      technical: currentSkills?.technical || technicalSkills, 
+      technical: currentSkills?.technical, 
       soft: newSkills 
     });
   };
@@ -114,9 +128,21 @@ export function EditableSkillsSection() {
   };
 
   const updateTechnicalSkill = (id: string, field: keyof TechnicalSkill, value: any) => {
+    console.log("DEBUG - updateTechnicalSkill:", { 
+      id, 
+      field, 
+      value, 
+      currentSkills: technicalSkills.map(s => ({ id: s.id, name: s.name, level: s.level }))
+    });
+    
     const newSkills = technicalSkills.map(skill => 
       skill.id === id ? { ...skill, [field]: value } : skill
     );
+    
+    console.log("DEBUG - newSkills after update:", 
+      newSkills.map(s => ({ id: s.id, name: s.name, level: s.level }))
+    );
+    
     saveTechnicalSkills(newSkills);
   };
 

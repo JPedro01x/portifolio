@@ -34,44 +34,9 @@ export function EditableProjectsSection() {
     if (savedProjects) {
       setProjects(savedProjects.projects as Project[]);
     } else {
-      // Dados iniciais
-      const initialProjects: Project[] = [
-        {
-          id: "1",
-          title: "Currículo Interativo",
-          description: "Portfólio pessoal desenvolvido com React, TypeScript e Tailwind CSS, apresentando informações profissionais de forma moderna e interativa.",
-          technologies: ["React", "TypeScript", "Tailwind CSS", "Framer Motion"],
-          image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop",
-          codeUrl: "https://github.com",
-          demoUrl: "https://github.com",
-          featured: true,
-          status: "concluido",
-        },
-        {
-          id: "2",
-          title: "Sistema de Gestão",
-          description: "Aplicação web para gerenciamento de dados com interface responsiva e funcionalidades completas de CRUD.",
-          technologies: ["React", "Node.js", "SQL", "Spring Boot"],
-          image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-          codeUrl: "https://github.com",
-          demoUrl: "#",
-          featured: false,
-          status: "em_andamento",
-        },
-        {
-          id: "3",
-          title: "API RESTful",
-          description: "API desenvolvida para integração de sistemas com autenticação e documentação completa.",
-          technologies: ["Java", "Spring Boot", "MySQL", "JWT"],
-          image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop",
-          codeUrl: "https://github.com",
-          demoUrl: "#",
-          featured: false,
-          status: "concluido",
-        },
-      ];
-      setProjects(initialProjects);
-      StorageService.set(STORAGE_KEYS.PROJECTS, { projects: initialProjects });
+      // Começa sem projetos iniciais - admin adiciona os projetos reais
+      setProjects([]);
+      StorageService.set(STORAGE_KEYS.PROJECTS, { projects: [] });
     }
   }, []);
 

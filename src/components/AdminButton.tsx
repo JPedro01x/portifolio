@@ -12,13 +12,17 @@ export function AdminButton() {
   const { user, logout, isAuthenticated } = useAuth();
 
   const handleSave = async () => {
+    console.log("DEBUG - AdminButton handleSave called");
     setSaveError(null);
     window.dispatchEvent(new Event('admin-save'));
     try {
+      console.log("DEBUG - Calling publishCurrentToRemote...");
       await publishCurrentToRemote();
+      console.log("DEBUG - publishCurrentToRemote success");
       setShowSaved(true);
       window.setTimeout(() => setShowSaved(false), 2000);
-    } catch {
+    } catch (error) {
+      console.log("DEBUG - publishCurrentToRemote error:", error);
       setSaveError('Falha ao publicar. Faça login novamente e tente de novo.');
     }
   };
